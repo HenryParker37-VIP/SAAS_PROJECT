@@ -65,6 +65,11 @@ router.post('/login', async (req, res: Response): Promise<void> => {
       return;
     }
 
+    // Record login
+    user.lastLogin = new Date();
+    user.loginCount = (user.loginCount || 0) + 1;
+    await user.save();
+
     const token = generateToken(String(user._id));
 
     res.json({
@@ -76,6 +81,26 @@ router.post('/login', async (req, res: Response): Promise<void> => {
       res.status(400).json({ message: error.errors[0].message });
       return;
     }
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// GET /api/user/admin/users - Get all users (admin view)
+router.get('/admin/users', authMiddleware, async (_req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const users = await User.find({}, 'name email lastLogin loginCount createdAt').sort({ lastLogin: -1 });
+    res.json({
+      users: users.map((u) => ({
+        id: u._id,
+        name: u.name,
+        email: u.email,
+        lastLogin: u.lastLogin,
+        loginCount: u.loginCount || 0,
+        joinedAt: u.createdAt,
+      })),
+      total: users.length,
+    });
+  } catch {
     res.status(500).json({ message: 'Server error' });
   }
 });

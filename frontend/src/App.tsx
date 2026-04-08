@@ -9,6 +9,7 @@ import { SignupPage } from '@/pages/Signup';
 import { DashboardPage } from '@/pages/Dashboard';
 import { TransactionsPage } from '@/pages/Transactions';
 import { SettingsPage } from '@/pages/Settings';
+import { AdminPage } from '@/pages/Admin';
 import { Loader2 } from 'lucide-react';
 
 function ProtectedRoute() {
@@ -63,6 +64,7 @@ export default function App() {
                 <Route path="/dashboard" element={<DashboardPage />} />
                 <Route path="/transactions" element={<TransactionsPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/admin" element={<AdminPage />} />
               </Route>
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>

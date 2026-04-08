@@ -5,6 +5,7 @@ import {
   LayoutDashboard,
   Table2,
   Settings,
+  Users,
   LogOut,
   Sun,
   Moon,
@@ -23,6 +24,7 @@ export function Sidebar() {
   const links = [
     { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { to: '/transactions', icon: Table2, label: 'Transactions' },
+    { to: '/admin', icon: Users, label: 'User Tracker' },
     { to: '/settings', icon: Settings, label: 'Settings' },
   ];
 

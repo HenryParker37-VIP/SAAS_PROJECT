@@ -5,6 +5,8 @@ export interface IUser extends Document {
   email: string;
   password: string;
   name: string;
+  lastLogin: Date | null;
+  loginCount: number;
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -28,6 +30,14 @@ const userSchema = new Schema<IUser>(
       type: String,
       required: true,
       trim: true,
+    },
+    lastLogin: {
+      type: Date,
+      default: null,
+    },
+    loginCount: {
+      type: Number,
+      default: 0,
     },
   },
   { timestamps: true }
