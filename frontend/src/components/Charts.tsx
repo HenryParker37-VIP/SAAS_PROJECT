@@ -36,7 +36,7 @@ export function RevenueChart({ data }: RevenueChartProps) {
           <YAxis tick={{ fontSize: 12, fill: 'var(--color-muted-foreground)' }} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
           <Tooltip
             contentStyle={{ background: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: 8 }}
-            formatter={(value: number) => [`$${value.toLocaleString()}`, 'Revenue']}
+            formatter={(value) => [`$${Number(value).toLocaleString()}`, 'Revenue']}
           />
           <Line type="monotone" dataKey="revenue" stroke="#2563eb" strokeWidth={2.5} dot={{ r: 4, fill: '#2563eb' }} />
         </LineChart>
@@ -60,7 +60,7 @@ export function ProductChart({ data }: ProductChartProps) {
           <YAxis type="category" dataKey="product" tick={{ fontSize: 12, fill: 'var(--color-muted-foreground)' }} width={110} />
           <Tooltip
             contentStyle={{ background: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: 8 }}
-            formatter={(value: number) => [`$${value.toLocaleString()}`, 'Revenue']}
+            formatter={(value) => [`$${Number(value).toLocaleString()}`, 'Revenue']}
           />
           <Bar dataKey="revenue" radius={[0, 4, 4, 0]}>
             {data.map((_, index) => (
@@ -92,7 +92,7 @@ export function RegionChart({ data }: RegionChartProps) {
             dataKey="revenue"
             nameKey="region"
             paddingAngle={4}
-            label={({ region, percent }) => `${region} ${(percent * 100).toFixed(0)}%`}
+            label={({ name, percent }: { name: string; percent: number }) => `${name} ${(percent * 100).toFixed(0)}%`}
           >
             {data.map((_, index) => (
               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -100,7 +100,7 @@ export function RegionChart({ data }: RegionChartProps) {
           </Pie>
           <Tooltip
             contentStyle={{ background: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: 8 }}
-            formatter={(value: number) => [`$${value.toLocaleString()}`, 'Revenue']}
+            formatter={(value) => [`$${Number(value).toLocaleString()}`, 'Revenue']}
           />
           <Legend />
         </PieChart>
