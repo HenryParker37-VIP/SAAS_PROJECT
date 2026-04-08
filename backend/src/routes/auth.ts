@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 import User from '../models/User';
+import LoginActivity from '../models/LoginActivity';
 import { authMiddleware, AuthRequest } from '../middleware/auth';
 
 const router = Router();
@@ -35,6 +36,14 @@ router.post('/signup', async (req, res: Response): Promise<void> => {
     const user = await User.create({ email, password, name });
     const token = generateToken(String(user._id));
 
+    // Log signup as first login activity
+    LoginActivity.create({
+      userId: user._id,
+      userName: user.name,
+      userEmail: user.email,
+      ipAddress: req.ip || req.socket.remoteAddress || 'unknown',
+    }).catch(() => {});
+
     res.status(201).json({
       token,
       user: { id: user._id, email: user.email, name: user.name },
@@ -66,6 +75,14 @@ router.post('/login', async (req, res: Response): Promise<void> => {
     }
 
     const token = generateToken(String(user._id));
+
+    // Log login activity (name & email only - never passwords)
+    LoginActivity.create({
+      userId: user._id,
+      userName: user.name,
+      userEmail: user.email,
+      ipAddress: req.ip || req.socket.remoteAddress || 'unknown',
+    }).catch(() => {});
 
     res.json({
       token,

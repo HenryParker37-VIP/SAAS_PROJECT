@@ -11,6 +11,7 @@ import {
   Zap,
   Menu,
   X,
+  Users,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
@@ -23,6 +24,7 @@ export function Sidebar() {
   const links = [
     { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { to: '/transactions', icon: Table2, label: 'Transactions' },
+    { to: '/login-tracker', icon: Users, label: 'Login Tracker' },
     { to: '/settings', icon: Settings, label: 'Settings' },
   ];
 

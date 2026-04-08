@@ -9,6 +9,7 @@ import mongoose from 'mongoose';
 import rateLimit from 'express-rate-limit';
 import authRoutes from './routes/auth';
 import dashboardRoutes from './routes/dashboard';
+import loginActivityRoutes from './routes/loginActivity';
 
 const app = express();
 const server = http.createServer(app);
@@ -35,6 +36,7 @@ app.use('/api/auth', authLimiter);
 app.use('/api/auth', authRoutes);
 app.use('/api/user', authRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/login-activity', loginActivityRoutes);
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });

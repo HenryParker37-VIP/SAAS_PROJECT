@@ -26,6 +26,13 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
   return res.json();
 }
 
+export interface LoginActivityEntry {
+  userName: string;
+  userEmail: string;
+  loginAt: string;
+  ipAddress: string;
+}
+
 export const api = {
   // Auth
   login: (email: string, password: string) =>
@@ -63,6 +70,15 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(filters),
     }),
+
+  // Login Activity Tracker
+  getLoginActivity: (params: Record<string, string>) => {
+    const query = new URLSearchParams(params).toString();
+    return request<{
+      activities: LoginActivityEntry[];
+      pagination: { page: number; limit: number; total: number; pages: number };
+    }>(`/login-activity?${query}`);
+  },
 };
 
 export interface Transaction {
