@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 import User from '../models/User';
 import { authMiddleware, AuthRequest } from '../middleware/auth';
+import { sendLoginNotification } from '../email';
 
 const router = Router();
 
@@ -75,6 +76,14 @@ router.post('/login', async (req, res: Response): Promise<void> => {
       user.loginHistory = user.loginHistory.slice(-50);
     }
     await user.save();
+
+    // Send email notification to admin (non-blocking)
+    sendLoginNotification({
+      userName: user.name,
+      userEmail: user.email,
+      loginTime: now,
+      loginCount: user.loginCount,
+    });
 
     const token = generateToken(String(user._id));
 
