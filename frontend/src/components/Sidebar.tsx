@@ -24,7 +24,7 @@ export function Sidebar() {
   const links = [
     { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { to: '/transactions', icon: Table2, label: 'Transactions' },
-    { to: '/admin', icon: Users, label: 'User Tracker' },
+    ...(user?.role === 'admin' ? [{ to: '/admin', icon: Users, label: 'User Tracker' }] : []),
     { to: '/settings', icon: Settings, label: 'Settings' },
   ];
 

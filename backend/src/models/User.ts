@@ -5,8 +5,10 @@ export interface IUser extends Document {
   email: string;
   password: string;
   name: string;
+  role: 'user' | 'admin';
   lastLogin: Date | null;
   loginCount: number;
+  loginHistory: { timestamp: Date }[];
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -31,6 +33,11 @@ const userSchema = new Schema<IUser>(
       required: true,
       trim: true,
     },
+    role: {
+      type: String,
+      enum: ['user', 'admin'],
+      default: 'user',
+    },
     lastLogin: {
       type: Date,
       default: null,
@@ -38,6 +45,10 @@ const userSchema = new Schema<IUser>(
     loginCount: {
       type: Number,
       default: 0,
+    },
+    loginHistory: {
+      type: [{ timestamp: { type: Date, required: true } }],
+      default: [],
     },
   },
   { timestamps: true }

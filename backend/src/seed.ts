@@ -47,7 +47,7 @@ async function seed() {
 
   // Create demo users
   const demoUsers = [
-    { email: 'demo@example.com', password: 'demo123', name: 'Demo User' },
+    { email: 'demo@example.com', password: 'adminofsaas', name: 'Demo User', role: 'admin' as const },
     { email: 'alice@example.com', password: 'password123', name: 'Alice Johnson' },
     { email: 'bob@example.com', password: 'password123', name: 'Bob Smith' },
     { email: 'carol@example.com', password: 'password123', name: 'Carol Williams' },
@@ -89,9 +89,9 @@ async function seed() {
   await DashboardData.insertMany(allTransactions);
   console.log(`Created ${allTransactions.length} transactions`);
 
-  console.log('\n--- Demo Credentials ---');
+  console.log('\n--- Admin Credentials ---');
   console.log('Email: demo@example.com');
-  console.log('Password: demo123');
+  console.log('Password: adminofsaas');
   console.log('------------------------\n');
 
   await mongoose.disconnect();

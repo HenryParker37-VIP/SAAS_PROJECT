@@ -29,17 +29,17 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
 export const api = {
   // Auth
   login: (email: string, password: string) =>
-    request<{ token: string; user: { id: string; email: string; name: string } }>('/auth/login', {
+    request<{ token: string; user: { id: string; email: string; name: string; role: 'user' | 'admin' } }>('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     }),
   signup: (email: string, password: string, name: string) =>
-    request<{ token: string; user: { id: string; email: string; name: string } }>('/auth/signup', {
+    request<{ token: string; user: { id: string; email: string; name: string; role: 'user' | 'admin' } }>('/auth/signup', {
       method: 'POST',
       body: JSON.stringify({ email, password, name }),
     }),
   getProfile: () =>
-    request<{ user: { id: string; email: string; name: string } }>('/user/profile'),
+    request<{ user: { id: string; email: string; name: string; role: 'user' | 'admin' } }>('/user/profile'),
 
   // Dashboard
   getDashboard: () =>

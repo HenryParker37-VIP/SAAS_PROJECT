@@ -37,7 +37,7 @@ router.post('/signup', async (req, res: Response): Promise<void> => {
 
     res.status(201).json({
       token,
-      user: { id: user._id, email: user.email, name: user.name },
+      user: { id: user._id, email: user.email, name: user.name, role: user.role },
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -66,15 +66,21 @@ router.post('/login', async (req, res: Response): Promise<void> => {
     }
 
     // Record login
-    user.lastLogin = new Date();
+    const now = new Date();
+    user.lastLogin = now;
     user.loginCount = (user.loginCount || 0) + 1;
+    user.loginHistory.push({ timestamp: now });
+    // Keep only last 50 login entries
+    if (user.loginHistory.length > 50) {
+      user.loginHistory = user.loginHistory.slice(-50);
+    }
     await user.save();
 
     const token = generateToken(String(user._id));
 
     res.json({
       token,
-      user: { id: user._id, email: user.email, name: user.name },
+      user: { id: user._id, email: user.email, name: user.name, role: user.role },
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -85,17 +91,26 @@ router.post('/login', async (req, res: Response): Promise<void> => {
   }
 });
 
-// GET /api/user/admin/users - Get all users (admin view)
-router.get('/admin/users', authMiddleware, async (_req: AuthRequest, res: Response): Promise<void> => {
+// GET /api/user/admin/users - Get all users (admin only)
+router.get('/admin/users', authMiddleware, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const users = await User.find({}, 'name email lastLogin loginCount createdAt').sort({ lastLogin: -1 });
+    // Check if requesting user is admin
+    const requestingUser = await User.findById(req.userId);
+    if (!requestingUser || requestingUser.role !== 'admin') {
+      res.status(403).json({ message: 'Admin access required' });
+      return;
+    }
+
+    const users = await User.find({}, 'name email role lastLogin loginCount loginHistory createdAt').sort({ lastLogin: -1 });
     res.json({
       users: users.map((u) => ({
         id: u._id,
         name: u.name,
         email: u.email,
+        role: u.role,
         lastLogin: u.lastLogin,
         loginCount: u.loginCount || 0,
+        loginHistory: (u.loginHistory || []).map((h) => ({ timestamp: h.timestamp })),
         joinedAt: u.createdAt,
       })),
       total: users.length,
@@ -118,7 +133,7 @@ router.get('/profile', authMiddleware, async (req: AuthRequest, res: Response): 
       res.status(404).json({ message: 'User not found' });
       return;
     }
-    res.json({ user: { id: user._id, email: user.email, name: user.name } });
+    res.json({ user: { id: user._id, email: user.email, name: user.name, role: user.role } });
   } catch {
     res.status(500).json({ message: 'Server error' });
   }
