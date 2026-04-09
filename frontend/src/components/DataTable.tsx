@@ -1,12 +1,14 @@
 import { useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
-import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Download, Search, Filter, Loader2 } from 'lucide-react';
+import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Download, Search, Filter, Loader2, Plus, Pencil, Trash2 } from 'lucide-react';
 import { api, type Transaction } from '@/lib/api';
 import { useToast } from '@/context/ToastContext';
 import { useTransactions } from '@/hooks/useDashboardData';
+import { TransactionModal } from '@/components/TransactionModal';
 
 interface DataTableProps {
   liveTransactions?: Transaction[];
+  showAddButton?: boolean;
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -15,7 +17,7 @@ const STATUS_COLORS: Record<string, string> = {
   failed: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
 };
 
-export function DataTable({ liveTransactions = [] }: DataTableProps) {
+export function DataTable({ liveTransactions = [], showAddButton = false }: DataTableProps) {
   const { addToast } = useToast();
   const [page, setPage] = useState('1');
   const [sortBy, setSortBy] = useState('date');
@@ -26,13 +28,16 @@ export function DataTable({ liveTransactions = [] }: DataTableProps) {
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [exporting, setExporting] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const filters = useMemo(
     () => ({ page, limit: '15', sortBy, sortOrder, product, region, status, search }),
     [page, sortBy, sortOrder, product, region, status, search]
   );
 
-  const { transactions, pagination, loading } = useTransactions(filters);
+  const { transactions, pagination, loading, refetch } = useTransactions(filters);
 
   const allTransactions = useMemo(() => {
     if (page === '1' && liveTransactions.length > 0) {
@@ -75,6 +80,34 @@ export function DataTable({ liveTransactions = [] }: DataTableProps) {
     setPage('1');
   };
 
+  const handleAddNew = () => {
+    setEditingTransaction(null);
+    setModalOpen(true);
+  };
+
+  const handleEdit = (tx: Transaction) => {
+    setEditingTransaction(tx);
+    setModalOpen(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this transaction?')) return;
+    try {
+      setDeletingId(id);
+      await api.deleteTransaction(id);
+      addToast('Transaction deleted', 'success');
+      refetch();
+    } catch {
+      addToast('Failed to delete transaction', 'error');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const handleModalSuccess = () => {
+    refetch();
+  };
+
   const SortIcon = ({ field }: { field: string }) =>
     sortBy === field ? (
       sortOrder === 'asc' ? (
@@ -89,14 +122,25 @@ export function DataTable({ liveTransactions = [] }: DataTableProps) {
       <div className="p-4 border-b border-border">
         <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
           <h3 className="text-base font-semibold text-card-foreground">Recent Transactions</h3>
-          <button
-            onClick={handleExport}
-            disabled={exporting}
-            className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
-          >
-            {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-            Export CSV
-          </button>
+          <div className="flex items-center gap-2">
+            {showAddButton && (
+              <button
+                onClick={handleAddNew}
+                className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors"
+              >
+                <Plus className="h-4 w-4" />
+                Add Transaction
+              </button>
+            )}
+            <button
+              onClick={handleExport}
+              disabled={exporting}
+              className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
+            >
+              {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+              Export CSV
+            </button>
+          </div>
         </div>
 
         {/* Filters */}
@@ -174,18 +218,21 @@ export function DataTable({ liveTransactions = [] }: DataTableProps) {
                   </div>
                 </th>
               ))}
+              {showAddButton && (
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Actions</th>
+              )}
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={6} className="px-4 py-12 text-center text-muted-foreground">
+                <td colSpan={showAddButton ? 7 : 6} className="px-4 py-12 text-center text-muted-foreground">
                   <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                 </td>
               </tr>
             ) : allTransactions.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-12 text-center text-muted-foreground">
+                <td colSpan={showAddButton ? 7 : 6} className="px-4 py-12 text-center text-muted-foreground">
                   No transactions found
                 </td>
               </tr>
@@ -204,6 +251,31 @@ export function DataTable({ liveTransactions = [] }: DataTableProps) {
                       {tx.status}
                     </span>
                   </td>
+                  {showAddButton && (
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => handleEdit(tx)}
+                          className="p-1.5 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                          title="Edit"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(tx._id)}
+                          disabled={deletingId === tx._id}
+                          className="p-1.5 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 text-muted-foreground hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
+                          title="Delete"
+                        >
+                          {deletingId === tx._id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-4 w-4" />
+                          )}
+                        </button>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))
             )}
@@ -236,6 +308,14 @@ export function DataTable({ liveTransactions = [] }: DataTableProps) {
           </button>
         </div>
       </div>
+
+      {/* Add/Edit Transaction Modal */}
+      <TransactionModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onSuccess={handleModalSuccess}
+        transaction={editingTransaction}
+      />
     </div>
   );
 }

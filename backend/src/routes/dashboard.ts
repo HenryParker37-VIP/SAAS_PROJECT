@@ -1,5 +1,6 @@
 import { Router, Response } from 'express';
 import mongoose from 'mongoose';
+import { z } from 'zod';
 import { authMiddleware, AuthRequest } from '../middleware/auth';
 import DashboardData from '../models/DashboardData';
 
@@ -146,6 +147,94 @@ router.get('/transactions', async (req: AuthRequest, res: Response): Promise<voi
     });
   } catch (error) {
     console.error('Transactions error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Validation schema for creating/updating transactions
+const transactionSchema = z.object({
+  date: z.string().min(1, 'Date is required'),
+  product: z.enum(['Analytics Pro', 'Cloud Storage', 'API Gateway', 'Auth Service', 'Data Pipeline'], {
+    errorMap: () => ({ message: 'Invalid product' }),
+  }),
+  revenue: z.number().min(0, 'Revenue must be positive'),
+  region: z.enum(['North America', 'Europe', 'Asia'], {
+    errorMap: () => ({ message: 'Invalid region' }),
+  }),
+  status: z.enum(['completed', 'pending', 'failed'], {
+    errorMap: () => ({ message: 'Invalid status' }),
+  }),
+  description: z.string().min(1, 'Description is required').max(500),
+  customerName: z.string().min(1, 'Customer name is required').max(200),
+  quantity: z.number().int().min(1, 'Quantity must be at least 1'),
+});
+
+// POST /api/dashboard/transactions - Create a new transaction
+router.post('/transactions', async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const data = transactionSchema.parse(req.body);
+    const userId = new mongoose.Types.ObjectId(req.userId!);
+
+    const transaction = await DashboardData.create({
+      ...data,
+      date: new Date(data.date),
+      userId,
+    });
+
+    res.status(201).json({ transaction });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({ message: error.errors[0].message });
+      return;
+    }
+    console.error('Create transaction error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// PUT /api/dashboard/transactions/:id - Update a transaction
+router.put('/transactions/:id', async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const data = transactionSchema.parse(req.body);
+    const userId = new mongoose.Types.ObjectId(req.userId!);
+
+    const transaction = await DashboardData.findOneAndUpdate(
+      { _id: req.params.id, userId },
+      { ...data, date: new Date(data.date) },
+      { new: true, runValidators: true }
+    );
+
+    if (!transaction) {
+      res.status(404).json({ message: 'Transaction not found' });
+      return;
+    }
+
+    res.json({ transaction });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({ message: error.errors[0].message });
+      return;
+    }
+    console.error('Update transaction error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// DELETE /api/dashboard/transactions/:id - Delete a transaction
+router.delete('/transactions/:id', async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const userId = new mongoose.Types.ObjectId(req.userId!);
+
+    const transaction = await DashboardData.findOneAndDelete({ _id: req.params.id, userId });
+
+    if (!transaction) {
+      res.status(404).json({ message: 'Transaction not found' });
+      return;
+    }
+
+    res.json({ message: 'Transaction deleted successfully' });
+  } catch (error) {
+    console.error('Delete transaction error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });

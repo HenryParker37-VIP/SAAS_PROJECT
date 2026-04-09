@@ -58,12 +58,40 @@ export const api = {
     }>(`/dashboard/transactions?${query}`);
   },
 
+  createTransaction: (data: TransactionFormData) =>
+    request<{ transaction: Transaction }>('/dashboard/transactions', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  updateTransaction: (id: string, data: TransactionFormData) =>
+    request<{ transaction: Transaction }>(`/dashboard/transactions/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  deleteTransaction: (id: string) =>
+    request<{ message: string }>(`/dashboard/transactions/${id}`, {
+      method: 'DELETE',
+    }),
+
   exportCSV: (filters: Record<string, string>) =>
     request<string>('/dashboard/export', {
       method: 'POST',
       body: JSON.stringify(filters),
     }),
 };
+
+export interface TransactionFormData {
+  date: string;
+  product: string;
+  revenue: number;
+  region: string;
+  status: 'completed' | 'pending' | 'failed';
+  description: string;
+  customerName: string;
+  quantity: number;
+}
 
 export interface Transaction {
   _id: string;

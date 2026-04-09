@@ -31,7 +31,7 @@ export function TransactionsPage() {
             View and manage all transactions with advanced filtering.
           </p>
         </div>
-        <DataTable liveTransactions={liveTransactions} />
+        <DataTable liveTransactions={liveTransactions} showAddButton={true} />
       </div>
     </div>
   );
