@@ -4,13 +4,15 @@ import { ThemeProvider } from '@/context/ThemeContext';
 import { ToastProvider } from '@/context/ToastContext';
 import { Toasts } from '@/components/Toasts';
 import { Sidebar } from '@/components/Sidebar';
+import { Footer } from '@/components/Footer';
+import { LandingPage } from '@/pages/Landing';
 import { LoginPage } from '@/pages/Login';
 import { SignupPage } from '@/pages/Signup';
 import { DashboardPage } from '@/pages/Dashboard';
 import { TransactionsPage } from '@/pages/Transactions';
 import { SettingsPage } from '@/pages/Settings';
 import { AdminPage } from '@/pages/Admin';
-import { Footer } from '@/components/Footer';
+import { NotFoundPage } from '@/pages/NotFound';
 import { Loader2 } from 'lucide-react';
 
 function ProtectedRoute() {
@@ -61,6 +63,7 @@ export default function App() {
           <AuthProvider>
             <Routes>
               <Route element={<PublicRoute />}>
+                <Route path="/" element={<LandingPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/signup" element={<SignupPage />} />
               </Route>
@@ -70,7 +73,7 @@ export default function App() {
                 <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/admin" element={<AdminPage />} />
               </Route>
-              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+              <Route path="*" element={<NotFoundPage />} />
             </Routes>
             <Toasts />
           </AuthProvider>

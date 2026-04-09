@@ -6,7 +6,8 @@ import { useDashboardData } from '@/hooks/useDashboardData';
 import { MetricCard } from '@/components/MetricCard';
 import { RevenueChart, ProductChart, RegionChart } from '@/components/Charts';
 import { DataTable } from '@/components/DataTable';
-import { DollarSign, ShoppingCart, TrendingUp, CheckCircle, Loader2, Wifi } from 'lucide-react';
+import { DollarSign, ShoppingCart, TrendingUp, CheckCircle, Wifi } from 'lucide-react';
+import { DashboardSkeleton } from '@/components/Skeleton';
 import type { Transaction } from '@/lib/api';
 
 export function DashboardPage() {
@@ -36,11 +37,7 @@ export function DashboardPage() {
   }, [addToast]);
 
   if (loading) {
-    return (
-      <div className="flex-1 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   if (error) {
