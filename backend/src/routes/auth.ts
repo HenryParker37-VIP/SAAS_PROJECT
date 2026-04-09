@@ -4,6 +4,7 @@ import { z } from 'zod';
 import User from '../models/User';
 import { authMiddleware, AuthRequest } from '../middleware/auth';
 import { sendLoginNotification } from '../email';
+import { generateSampleData } from '../sampleData';
 
 const router = Router();
 
@@ -34,6 +35,15 @@ router.post('/signup', async (req, res: Response): Promise<void> => {
     }
 
     const user = await User.create({ email, password, name });
+
+    // Generate sample data so new users see a populated dashboard
+    try {
+      await generateSampleData(user._id);
+    } catch (err) {
+      console.error('Failed to generate sample data:', err);
+      // Non-blocking: user still gets created even if sample data fails
+    }
+
     const token = generateToken(String(user._id));
 
     res.status(201).json({
