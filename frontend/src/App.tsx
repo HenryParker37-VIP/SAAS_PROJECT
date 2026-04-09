@@ -10,6 +10,7 @@ import { DashboardPage } from '@/pages/Dashboard';
 import { TransactionsPage } from '@/pages/Transactions';
 import { SettingsPage } from '@/pages/Settings';
 import { AdminPage } from '@/pages/Admin';
+import { Footer } from '@/components/Footer';
 import { Loader2 } from 'lucide-react';
 
 function ProtectedRoute() {
@@ -28,7 +29,10 @@ function ProtectedRoute() {
   return (
     <div className="flex min-h-screen bg-background">
       <Sidebar />
-      <Outlet />
+      <div className="flex-1 flex flex-col min-h-screen">
+        <Outlet />
+        <Footer />
+      </div>
     </div>
   );
 }

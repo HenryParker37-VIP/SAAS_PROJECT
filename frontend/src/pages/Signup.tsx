@@ -3,6 +3,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { Zap, Loader2, Eye, EyeOff } from 'lucide-react';
+import { Footer } from '@/components/Footer';
 
 export function SignupPage() {
   const { signup } = useAuth();
@@ -30,7 +31,8 @@ export function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+    <div className="min-h-screen flex flex-col bg-background">
+      <div className="flex-1 flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-primary text-primary-foreground mx-auto mb-4">
@@ -104,6 +106,8 @@ export function SignupPage() {
           </p>
         </form>
       </div>
+      </div>
+      <Footer />
     </div>
   );
 }
